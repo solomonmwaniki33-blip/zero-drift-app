@@ -42,13 +42,14 @@ jobs:
           file: ./Dockerfile
           push: false
           load: true
+          pull: true
           tags: acrzerodriftunique.azurecr.io/zero-drift-app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       # Security Gate: Blocks pipeline execution if any high-risk exposures are detected
       - name: Execute Trivy Vulnerability Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.32.0
         with:
           image-ref: acrzerodriftunique.azurecr.io/zero-drift-app:latest
           format: 'table'

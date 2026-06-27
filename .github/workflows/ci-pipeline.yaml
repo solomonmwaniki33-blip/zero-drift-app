@@ -1,0 +1,65 @@
+name: ci factory
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  compile_and_gate:
+    name: Build, Scan, and Publish Container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Authenticate Container Registry
+        run: az acr login --name acrzerodriftunique
+
+      - name: Set up QEMU Engine
+        uses: docker/setup-qemu-action@v3
+
+      - name: Initialize Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build the application locally to feed it into our security scanner
+      - name: Build Local Base Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: acrzerodriftunique.azurecr.io/zero-drift-app:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Security Gate: Blocks pipeline execution if any high-risk exposures are detected
+      - name: Execute Trivy Vulnerability Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: acrzerodriftunique.azurecr.io/zero-drift-app:latest
+          format: 'table'
+          exit-code: 1
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # Publish verified artifacts up to ACR
+      - name: Push Hardened Artifacts to ACR
+        if: success()
+        run: |
+          docker tag acrzerodriftunique.azurecr.io/zero-drift-app:latest acrzerodriftunique.azurecr.io/zero-drift-app:hardened
+          docker push acrzerodriftunique.azurecr.io/zero-drift-app:hardened

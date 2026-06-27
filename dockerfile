@@ -2,7 +2,7 @@
 
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY src/package.json src/package-lock.json ./
+COPY src/package.json src ./
 RUN npm install --omit=dev && npm cache clean --force
 COPY src/ ./
 

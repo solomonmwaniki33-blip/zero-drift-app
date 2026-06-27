@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+src/node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Coverage / test artifacts
+coverage/
+.nyc_output/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+
+# Docker
+*.tar
+docker-compose.override.yml
+
+# Trivy / scan reports (if generated locally)
+trivy-report.json
+trivy-report.txt

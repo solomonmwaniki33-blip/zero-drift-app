@@ -2,7 +2,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY src/package*.json ./
-RUN npm ci
+RUN npm install
 COPY src/ ./
 
 # Stage 2: Minimalist, clean production container
